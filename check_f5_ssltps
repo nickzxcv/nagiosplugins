@@ -1,0 +1,42 @@
+#!/bin/bash
+
+SLBSERVER=$1
+INTERVAL=$2
+WARNING=$3
+CRITICAL=$4
+
+COMMUNITY="public"
+SNMPVERSION="2c"
+THEMIB="F5-BIGIP-SYSTEM-MIB"
+export MIBS="+$THEMIB"
+export MIBDIRS="+/var/lib/mibs/f5/"
+NATIVESSLSNMPOBJECT="sysClientsslStatTotNativeConns.0"
+COMPATSSLSNMPOBJECT="sysClientsslStatTotCompatConns.0"
+
+# if any of these snmpgets fail, $INTERVAL gets set to 0 to make sure that calculations
+# afterward are nonsense (divide by 0) and then to have the UNKNOWN result
+nativessltps_counter=$(snmpget -Ov -Oq -v $SNMPVERSION -c $COMMUNITY $SLBSERVER $THEMIB::$NATIVESSLSNMPOBJECT) || INTERVAL=0
+compatssltps_counter=$(snmpget -Ov -Oq -v $SNMPVERSION -c $COMMUNITY $SLBSERVER $THEMIB::$COMPATSSLSNMPOBJECT) || INTERVAL=0
+
+sleep $INTERVAL
+previous_nativessltps_counter=$nativessltps_counter
+previous_compatssltps_counter=$compatssltps_counter
+nativessltps_counter=$(snmpget -Ov -Oq -v $SNMPVERSION -c $COMMUNITY $SLBSERVER $THEMIB::$NATIVESSLSNMPOBJECT) || INTERVAL=0
+compatssltps_counter=$(snmpget -Ov -Oq -v $SNMPVERSION -c $COMMUNITY $SLBSERVER $THEMIB::$COMPATSSLSNMPOBJECT) || INTERVAL=0
+
+ssltps_interval_delta=$(( (nativessltps_counter+compatssltps_counter) - (previous_nativessltps_counter+previous_compatssltps_counter) ))
+ssltps=$(( $ssltps_interval_delta / $INTERVAL ))
+
+if (( $ssltps > $CRITICAL )); then
+	echo "CRITICAL: $ssltps SSL TPS"
+	exit 2
+elif (( $ssltps > $WARNING )); then
+	echo "WARNING: $ssltps SSL TPS"
+	exit 1
+elif (( $ssltps < $WARNING )); then
+	echo "OK: $ssltps SSL TPS"
+	exit 0
+else
+	echo "UNKNOWN: $ssltps SSL TPS incomparable"
+	exit 3
+fi
