@@ -9,6 +9,12 @@ use DateTimeX::Easy;
 
 my ($host, $warning_periods, $critical_periods, $port, $statusoutput, $checkpoint_dt, $checkpoint_period, $gaptime, $warning_gap, $critical_gap);
 
+# This is a nagios plugin that gets the checkpoint time
+# from a Hadoop HDFS secondary namenode, and compares it
+# to the current time. The thresholds for the checkpoints
+# getting behind are expressed in number of checkpoint
+# periods which are also taken from the secondary namenode.
+
 ($host, $warning_periods, $critical_periods)=@ARGV;
 $port="50090";
 

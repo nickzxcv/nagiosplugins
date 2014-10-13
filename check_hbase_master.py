@@ -5,8 +5,8 @@ import urllib, json
 
 def usage():
     print '''
-Connects to an HBASE master and monitors active/backup
-status and the number of dead region servers.
+This is a nagios plugin that connects to an HBASE master and monitors
+active/backup status and the number of dead region servers.
  check_hbase.py -H <hostname> | [ -b active | backup ]
               [ -w <warn # of dead>[%] ] [ -c <crit # of dead>[%] ]
     -h  This help text.

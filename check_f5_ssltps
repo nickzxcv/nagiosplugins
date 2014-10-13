@@ -5,6 +5,9 @@ INTERVAL=$2
 WARNING=$3
 CRITICAL=$4
 
+# This is a nagios plugin to monitor global SSL TPS levels
+# on a F5 BIG-IP LTM load balancer.
+
 COMMUNITY="public"
 SNMPVERSION="2c"
 THEMIB="F5-BIGIP-SYSTEM-MIB"
